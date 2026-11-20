@@ -1,0 +1,38 @@
+#!/usr/bin/python3
+
+DOMAIN = "mintinstall"
+PATH = "/usr/share/linuxmint/locale"
+KEYWORDS = "program,software,store,repository,package,add,install,uninstall,remove,apps,applications,games,flatpak"
+
+import os
+import gettext
+import mintcommon.additionalfiles as additionalfiles
+
+os.environ['LANGUAGE'] = "en_US.UTF-8"
+gettext.install(DOMAIN, PATH)
+
+prefix = "[Desktop Entry]\n"
+
+suffix = """Exec=mintinstall %u
+Icon=mintinstall
+MimeType=application/vnd.debian.binary-package;application/x-deb;application/x-debian-package;application/vnd.flatpak.ref;application/vnd.flatpak.repo;
+Terminal=false
+Type=Application
+Encoding=UTF-8
+Categories=Application;System;Settings;XFCE;X-XFCE-SettingsDialog;X-XFCE-SystemSettings;
+NotShowIn=KDE;
+StartupNotify=true
+"""
+
+additionalfiles.generate(DOMAIN, PATH, "usr/share/applications/mintinstall.desktop", prefix, _("Software Manager"), _("Install new applications"), suffix, keywords=KEYWORDS)
+
+suffix = """Exec=mintinstall
+Icon=software-properties-mint
+Terminal=false
+Type=Application
+Encoding=UTF-8
+Categories=System;
+OnlyShowIn=KDE;
+"""
+
+additionalfiles.generate(DOMAIN, PATH, "usr/share/applications/mintinstall-kde.desktop", prefix, _("Software Manager"), _("Install new applications"), suffix, genericName=_("Install new applications"), keywords=KEYWORDS)

@@ -1,0 +1,31 @@
+Source: mintinstallpp
+Section: admin
+Priority: optional
+Maintainer: B1ackOS <support@b1ack.net>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.5
+
+Package: mintinstallpp
+Architecture: all
+Pre-Depends: ca-certificates (>= 20210101)
+Depends: python3 (>= 3.4),
+         python3-bs4,
+         python3-gi-cairo,
+         python3-lxml,
+         python3-setproctitle,
+         python3-xapp,
+         gir1.2-gdkpixbuf-2.0,
+         gir1.2-glib-2.0,
+         gir1.2-gtk-3.0,
+         gir1.2-xapp-1.0,
+         libgtk3-perl,
+         mint-common (>= 2.2.4),
+         app-install-data
+Conflicts: mintinstall
+Replaces: mintinstall
+Provides: mintinstall
+Recommends: gir1.2-flatpak-1.0, flatpak, xdg-desktop-portal-gtk
+Description: Software Manager (B1ackOS Edition)
+ A software manager to easily install new applications.
+ Patched version with updates support, AppStream support,
+ file installation support, and repository management.
