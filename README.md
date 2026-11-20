@@ -18,7 +18,7 @@ Changes compared to upstream (see `debian/changelog`):
 ## Build
 Get source code
 ```
-git clone https://github.com/linuxmint/mintinstall
+git clone https://github.com/b1-ack/mintinstallpp
 cd mintinstall
 ```
 Build
