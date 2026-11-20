@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Software Manager
+Comment=Open an application from an appstream link
+Icon=usermenu-delete-symbolic
+Exec=mintinstall %u
+MimeType=x-scheme-handler/appstream;
+NoDisplay=true
+Terminal=false
+Encoding=UTF-8
