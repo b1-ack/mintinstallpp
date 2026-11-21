@@ -19,7 +19,7 @@ Changes compared to upstream (see `debian/changelog`):
 Get source code
 ```
 git clone https://github.com/b1-ack/mintinstallpp
-cd mintinstall
+cd mintinstallpp
 ```
 Build
 ```
@@ -28,7 +28,7 @@ dpkg-buildpackage --no-sign
 Install
 ```
 cd ..
-sudo dpkg -i mintinstall*.deb
+sudo dpkg -i mintinstallpp*.deb
 ```
 
 ## Translations
