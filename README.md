@@ -2,7 +2,7 @@
 
 Fork of the Linux Mint Software Manager (Mintinstall) application, adapted for the **B1ackOS** distribution.
 
-![image](https://user-images.githubusercontent.com/19881231/122644976-86767180-d120-11eb-9cf4-eed2813f749b.png)
+![image](https://raw.githubusercontent.com/b1-ack/mintinstallpp/refs/heads/main/img/mintinstallpp.png)
 
 ## B1ackOS fork
 
