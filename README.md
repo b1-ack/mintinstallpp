@@ -14,6 +14,7 @@ Changes compared to upstream (see `debian/changelog`):
 * Added AppStream support
 * Added file installation support
 * Added repository and key management support
+* Added another source of preview photos
 
 ## Build
 Get source code
