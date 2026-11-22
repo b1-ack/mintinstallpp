@@ -247,10 +247,12 @@ class ScreenshotDownloader():
                 self.add_screenshot(self.pkginfo, None, 0)
 
             return
+        found_b1ack_screenshot = False
         try:
-            link = "https://community.linuxmint.com/img/screenshots/%s.png" % self.pkginfo.name
+            link = "https://mi.b1ack.net/img/%s.png" % self.pkginfo.name
             if requests.head(link, timeout=5).status_code < 400:
                 num_screenshots += 1
+                found_b1ack_screenshot = True
 
                 local_name = os.path.join(SCREENSHOT_DIR, "%s_%s.png" % (self.pkginfo.name, num_screenshots))
                 self.save_to_file(link, None, local_name)
@@ -258,6 +260,19 @@ class ScreenshotDownloader():
                 self.add_screenshot(self.pkginfo, local_name, num_screenshots)
         except Exception as e:
             print(e)
+
+        if not found_b1ack_screenshot:
+            try:
+                link = "https://community.linuxmint.com/img/screenshots/%s.png" % self.pkginfo.name
+                if requests.head(link, timeout=5).status_code < 400:
+                    num_screenshots += 1
+
+                    local_name = os.path.join(SCREENSHOT_DIR, "%s_%s.png" % (self.pkginfo.name, num_screenshots))
+                    self.save_to_file(link, None, local_name)
+
+                    self.add_screenshot(self.pkginfo, local_name, num_screenshots)
+            except Exception as e:
+                print(e)
 
         try:
             # Add additional screenshots from Debian
