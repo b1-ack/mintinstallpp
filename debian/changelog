@@ -1,3 +1,12 @@
+mintinstallpp (8.4.0-b1ack.1) zena; urgency=medium
+
+  [ B1ackOS ]
+  * Add mi.b1ack.net as the preferred screenshot source for APT packages,
+    with community.linuxmint.com as fallback
+  * Update the APT/Flatpak package ratio
+
+ -- B1ackOS <support@b1ack.net>  Sun, 22 Nov 2026 06:25:01 +0400
+
 mintinstallpp (8.4.0-b1ack) zena; urgency=medium
 
   [ B1ackOS ]
