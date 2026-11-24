@@ -8,7 +8,9 @@
 # the same way.  Only the values that the user actually changed are written
 # back, everything else in the files is preserved byte for byte.
 
+import base64
 import gettext
+import json
 import os
 import re
 import subprocess
@@ -802,49 +804,83 @@ def dedupe_keys(keys, signed_by_paths=None):
     return [chosen[identity] for identity in order]
 
 
-def write_file_async(path, text, callback):
-    """Writes a sources file, asking for authorization only when needed."""
-    data = text.encode("utf-8", "surrogateescape")
+SOURCE_WRITER = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "mintinstall-sources-writer.py")
 
-    if os.access(path, os.W_OK):
-        try:
-            with open(path, "wb") as stream:
-                stream.write(data)
-        except OSError as error:
-            callback(False, str(error))
-            return
 
-        callback(True, "")
+def write_files_async(files, callback):
+    """Writes sources files, asking for authorization at most once.
+
+    `files` is a list of (path, text) pairs.  Writable files are written
+    directly; the rest are handed to a single privileged helper call, so a
+    save with several changed files only shows one password prompt.
+    The callback receives a list of error strings (empty on success).
+    """
+    privileged = []
+    errors = []
+
+    for path, text in files:
+        data = text.encode("utf-8", "surrogateescape")
+
+        if os.access(path, os.W_OK):
+            try:
+                with open(path, "wb") as stream:
+                    stream.write(data)
+            except OSError as error:
+                errors.append("%s: %s" % (path, error))
+            continue
+
+        privileged.append((path, data))
+
+    if not privileged:
+        callback(errors)
         return
+
+    request = {
+        "files": [
+            {"path": path, "data": base64.b64encode(data).decode("ascii")}
+            for path, data in privileged
+        ]
+    }
 
     try:
         process = Gio.Subprocess.new(
-            ["pkexec", "tee", path],
+            ["pkexec", SOURCE_WRITER],
             Gio.SubprocessFlags.STDIN_PIPE |
             Gio.SubprocessFlags.STDOUT_SILENCE |
             Gio.SubprocessFlags.STDERR_PIPE)
     except GLib.Error as error:
-        callback(False, error.message)
+        errors.extend("%s: %s" % (path, error.message) for path, _data in privileged)
+        callback(errors)
         return
 
     def on_finished(proc, result):
         try:
             _success, _stdout, stderr = proc.communicate_finish(result)
         except GLib.Error as error:
-            callback(False, error.message)
+            errors.append(str(error.message))
+            callback(errors)
             return
 
         if proc.get_successful():
-            callback(True, "")
+            callback(errors)
             return
 
         message = ""
         if stderr is not None:
             message = stderr.get_data().decode("utf-8", "replace").strip()
 
-        callback(False, message or _("Authentication failed or was cancelled"))
+        if message:
+            errors.extend(message.splitlines())
+        else:
+            errors.extend(
+                "%s: %s" % (path, _("Authentication failed or was cancelled"))
+                for path, _data in privileged)
 
-    process.communicate_async(GLib.Bytes.new(data), None, on_finished)
+        callback(errors)
+
+    process.communicate_async(
+        GLib.Bytes.new(json.dumps(request).encode("utf-8")), None, on_finished)
 
 
 def delete_file_async(path, callback):
@@ -1432,8 +1468,6 @@ class SourcesPage(Gtk.Box):
         self.files = []
         self.keys = []
         self.rows = []
-        self._save_queue = []
-        self._save_errors = []
 
         self.build_ui()
         self.reload()
@@ -1727,34 +1761,18 @@ class SourcesPage(Gtk.Box):
             if row.is_empty():
                 self.remove_row(row)
 
-        self._save_queue = [sources_file for sources_file in self.files
-                            if sources_file.changed()]
-        self._save_errors = []
+        pending = [sources_file for sources_file in self.files
+                   if sources_file.changed()]
 
-        if not self._save_queue:
+        if not pending:
             return
 
-        self._save_next()
+        write_files_async(
+            [(sources_file.path, sources_file.render()) for sources_file in pending],
+            self._save_finished)
 
-    def _save_next(self):
-        if not self._save_queue:
-            self._save_finished()
-            return
-
-        sources_file = self._save_queue.pop(0)
-        write_file_async(
-            sources_file.path,
-            sources_file.render(),
-            lambda success, error: self._save_done(sources_file, success, error))
-
-    def _save_done(self, sources_file, success, error):
-        if not success:
-            self._save_errors.append("%s: %s" % (sources_file.path, error))
-
-        self._save_next()
-
-    def _save_finished(self):
-        if self._save_errors:
+    def _save_finished(self, errors):
+        if errors:
             parent = self.get_toplevel()
             if not isinstance(parent, Gtk.Window):
                 parent = None
@@ -1765,7 +1783,7 @@ class SourcesPage(Gtk.Box):
                 message_type=Gtk.MessageType.ERROR,
                 buttons=Gtk.ButtonsType.CLOSE,
                 text=_("Unable to save the software sources"))
-            message.format_secondary_text("\n".join(self._save_errors))
+            message.format_secondary_text("\n".join(errors))
             message.run()
             message.destroy()
         else:
