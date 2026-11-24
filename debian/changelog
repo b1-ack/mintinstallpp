@@ -1,3 +1,14 @@
+mintinstallpp (8.4.0-b1ack.2) zena; urgency=medium
+
+  [ B1ackOS ]
+  * Software sources: ask for the administrator password only once per
+    save instead of once for every changed file
+  * Software sources: write all changed files through a single privileged
+    helper, replacing them atomically and keeping their permissions
+  * Software sources: only allow the helper to write below /etc/apt
+
+ -- B1ackOS <support@b1ack.net>  Tue, 24 Nov 2026 05:37:05 +0400
+
 mintinstallpp (8.4.0-b1ack.1) zena; urgency=medium
 
   [ B1ackOS ]
